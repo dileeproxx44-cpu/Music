@@ -1,0 +1,134 @@
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Segoe UI;
+}
+body{
+background: url('https://images.unsplash.com/photo-1507838153414-b4b713384a76') no-repeat center center fixed;
+background-size: cover;
+color:white;
+}
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 40px;
+    background: #1e1e1e;
+    position: sticky;
+    top: 0;
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: bold;
+    color: #00f5ff;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 15px;
+    transition: 0.3s;
+}
+
+nav a:hover {
+    color: #8a2be2;
+}
+
+.profile {
+    background: #8a2be2;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+header h1{
+color:#00f5ff;
+}
+h1{
+    align-items: center;
+    text-align: center;
+    color: #010808;
+    font-style: italic;
+    margin-top: 30px;
+    margin-bottom: 20px;
+}
+.search-box{
+text-align:center;
+margin:20px;
+}
+
+.search-box input{
+width:60%;
+padding:12px;
+border-radius:25px;
+border:none;
+font-size:16px;
+outline:none;
+}
+
+.container{
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
+gap:25px;
+padding:20px;
+}
+
+.card{
+width:220px;
+background:#1c1c1c;
+border-radius:15px;
+overflow:hidden;
+cursor:pointer;
+transition:0.3s;
+text-align:center;
+}
+
+.card:hover{
+transform:scale(1.05);
+}
+
+.card img{
+width:100%;
+height:220px;
+object-fit:cover;
+}
+
+.card h3{
+margin:10px 0;
+}
+
+.card p{
+color:#aaa;
+margin-bottom:10px;
+}
+
+.songs-section{
+max-width:800px;
+margin:30px auto;
+padding:20px;
+background:#1c1c1c;
+border-radius:15px;
+display:none;
+}
+
+.song{
+margin:12px 0;
+padding:10px;
+background:#2a2a2a;
+border-radius:10px;
+}
+
+.song button{
+margin-top:8px;
+padding:6px 14px;
+border:none;
+border-radius:20px;
+background:#00f5ff;
+color:black;
+cursor:pointer;
+font-weight:bold;
+margin-right:8px;
+}

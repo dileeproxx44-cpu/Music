@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Audio Aura - Register</title>
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+<div class="login-container">
+    <h2>🎵 Create Account</h2>
+
+    <form id="registerForm">
+
+        <div class="input-group">
+            <label>Username</label>
+            <input type="text" id="registerUsername" placeholder="Enter username" required>
+        </div>
+
+        <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="registerPassword" placeholder="Enter password" required>
+        </div>
+
+        <button type="submit">Register</button>
+
+        <p class="register-text">
+            Already have an account?
+            <a href="login.html">Login</a>
+        </p>
+
+    </form>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// 🔥 Firebase Config
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyAyoJLg5gJnGStzuZXDLYyk8zNLd0DzFII",
+  authDomain: "audio-auro-pro.firebaseapp.com",
+  projectId: "audio-auro-pro",
+  storageBucket: "audio-auro-pro.firebasestorage.app",
+  messagingSenderId: "480222649355",
+  appId: "1:480222649355:web:3308d7303a2e8021e57b0e",
+  measurementId: "G-6CYDDE3KPK"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Register Logic
+const form = document.getElementById("registerForm");
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const username = document.getElementById("registerUsername").value.trim();
+  const password = document.getElementById("registerPassword").value;
+
+  if(!username || !password){
+      alert("Please enter all fields");
+      return;
+  }
+
+  const email = username + "@audioaura.com"; // Using fake email for Firebase Auth
+  
+
+  try {
+    // 1️⃣ Create user in Firebase Auth
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+   
+    // 2️⃣ Store user details in Firestore
+    await setDoc(doc(db, "users", user.uid), {
+        username: username,
+        email: email,
+        createdAt: new Date(),
+        plan: "free", // default plan
+        
+    });
+
+    alert("Account Created Successfully 🎉");
+    window.location.href = "login.html";
+  } catch (error) {
+    alert(error.message);
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+*{
+    margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif;
+}
+body{
+    background: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.85)),url("https://images.unsplash.com/photo-1470225620780-dba8ba36b745") no-repeat center center fixed;background-size: cover;color:white;}
+header
+{
+    display:flex;justify-content:space-between;align-items:center;padding:15px 40px;background:#1e1e1e;position:sticky;top:0;}
+.logo
+{
+    font-size:22px;font-weight:bold;color:#00f5ff;}
+nav a{
+    color:white;text-decoration:none;margin:0 15px;transition:0.3s;}
+nav a:hover
+{
+    color:#8a2be2;
+}
+.profile{
+    background:#8a2be2;padding:8px 15px;border-radius:20px;cursor:pointer;
+}
+.container
+{
+    max-width:800px;margin:20px auto;padding:20px;
+}
+.post{
+    background:rgba(255,255,255,0.05);padding:15px;margin-bottom:15px;border-radius:12px;
+}
+.post-buttons button{
+    margin-right:10px;background:linear-gradient(45deg,#ff00cc,#3333ff);border:none;padding:6px 12px;border-radius:10px;cursor:pointer;color:white;
+}
+.stats{
+    margin-top:8px;font-size:14px;color:#ccc;
+}
+.time-display{
+    font-size:13px;margin-top:6px;color:#aaa;
+}
+.comment-box input{
+    width:70%;padding:5px;border-radius:6px;border:none;
+}
+.comment{font-size:14px;margin-top:4px;color:#ddd;
+}

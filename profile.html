@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audio Aura - Profile</title>
+<link rel="stylesheet" href="profile.css">
+</head>
+<body>
+<header>
+<div class="logo">🎵 RhythmX</div>
+<nav>
+<a href="home.html">Home</a>
+<a href="director.html">Directors</a>
+<a href="instrument.html">Instruments</a>
+<a href="post.html">Upload Music</a>
+<a href="feed.html">Posts</a>
+<a href="subscribe.html">Subscribe</a>
+<a href="profile.html">Profile</a>
+</nav>
+<div class="profile">
+Welcome, <span id="profileName"></span> |
+<button onclick="logout()" style="background:none;border:none;color:white;cursor:pointer;">Logout</button>
+</div>
+</header>
+
+<div class="container">
+<h2>My Posts</h2>
+<div id="userPosts"></div>
+</div>
+
+<script type="module">
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyAyoJLg5gJnGStzuZXDLYyk8zNLd0DzFII",
+authDomain: "audio-auro-pro.firebaseapp.com",
+projectId: "audio-auro-pro",
+appId: "1:480222649355:web:3308d7303a2e8021e57b0e"
+};
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+let currentUser=null;
+let db;
+let currentAudio=null;
+
+onAuthStateChanged(auth,user=>{
+    if(user){
+        currentUser=user;
+        document.getElementById("profileName").innerText=user.email.split("@")[0];
+        initDB();
+    } else window.location.href="login.html";
+});
+
+window.logout=()=>signOut(auth).then(()=>window.location.href="login.html");
+
+// IndexedDB
+function initDB(){
+    let req=indexedDB.open("AudioAuraDB",3);
+    req.onupgradeneeded=e=>{
+        db=e.target.result;
+        if(!db.objectStoreNames.contains("posts")) db.createObjectStore("posts",{keyPath:"id"});
+    };
+    req.onsuccess=e=>{db=e.target.result; loadPosts();}
+    req.onerror=()=>alert("DB failed!");
+}
+
+// Format time
+function formatTime(s){ let m=Math.floor(s/60); let sec=Math.floor(s%60); return m+":"+(sec<10?"0"+sec:sec); }
+
+// Load posts
+function loadPosts(){
+    const container=document.getElementById("userPosts");
+    container.innerHTML="";
+    let tx=db.transaction("posts","readonly");
+    let store=tx.objectStore("posts");
+    store.openCursor().onsuccess=e=>{
+        let cursor=e.target.result;
+        if(cursor){
+            if(cursor.value.username===currentUser.email.split("@")[0]){
+                renderPost(cursor.value, container, true);
+            }
+            cursor.continue();
+        }
+    };
+}
+
+// Render single post
+function renderPost(p, container, canDelete){
+    const div=document.createElement("div");
+    div.className="post";
+    div.id="post-"+p.id;
+    div.innerHTML=`
+        <div><b>${p.title}</b></div>
+        <div style="color:#bbb;">${p.type}</div>
+        <audio id="audio-${p.id}"></audio>
+        <div class="time-display"><span id="current-${p.id}">0:00</span> / <span id="duration-${p.id}">0:00</span></div>
+        <div class="post-buttons">
+            <button id="play-${p.id}">▶ </button>
+            <button id="pause-${p.id}" style="display:none;">⏸ </button>
+            <button id="like-${p.id}">❤️ </button>
+            ${canDelete?`<button id="delete-${p.id}" style="background:#ff4d4d;">🗑 </button>`:""}
+        </div>
+        <div class="stats" id="stats-${p.id}">👁 ${p.views} Views | ❤️ ${p.likes.length} Likes</div>
+        <div class="comment-box">
+            <input type="text" id="comment-${p.id}" placeholder="Write comment...">
+            <button id="comment-btn-${p.id}">Post</button>
+        </div>
+        <div id="comments-${p.id}">${p.comments.map(c=>`<div class="comment">💬 ${c}</div>`).join("")}</div>
+    `;
+    container.prepend(div);
+
+    const audio=document.getElementById("audio-"+p.id);
+    audio.src=URL.createObjectURL(new Blob([p.audioFile]));
+    audio.onloadedmetadata=()=>document.getElementById("duration-"+p.id).innerText=formatTime(audio.duration);
+    audio.ontimeupdate=()=>document.getElementById("current-"+p.id).innerText=formatTime(audio.currentTime);
+
+    // Buttons
+    document.getElementById("play-"+p.id).onclick=()=>playSong(p.id);
+    document.getElementById("pause-"+p.id).onclick=()=>pauseSong(p.id);
+    document.getElementById("like-"+p.id).onclick=()=>likePost(p.id);
+    if(canDelete) document.getElementById("delete-"+p.id).onclick=()=>deletePost(p.id);
+    document.getElementById("comment-btn-"+p.id).onclick=()=>addComment(p.id);
+}
+
+// Play / Pause
+function playSong(id){
+    const audio=document.getElementById("audio-"+id);
+    if(currentAudio && currentAudio!==audio){
+        currentAudio.pause();
+        document.getElementById("pause-"+currentAudio.id.split("-")[1]).style.display="none";
+        document.getElementById("play-"+currentAudio.id.split("-")[1]).style.display="inline-block";
+    }
+    audio.play();
+    currentAudio=audio;
+    document.getElementById("play-"+id).style.display="none";
+    document.getElementById("pause-"+id).style.display="inline-block";
+    incrementView(id);
+}
+function pauseSong(id){
+    const audio=document.getElementById("audio-"+id);
+    audio.pause();
+    document.getElementById("pause-"+id).style.display="none";
+    document.getElementById("play-"+id).style.display="inline-block";
+}
+
+// Likes
+function likePost(id){
+    let tx=db.transaction("posts","readwrite");
+    let store=tx.objectStore("posts");
+    store.get(Number(id)).onsuccess=e=>{
+        let post=e.target.result;
+        if(!post.likes.includes(currentUser.email.split("@")[0])) post.likes.push(currentUser.email.split("@")[0]);
+        store.put(post).onsuccess=()=>document.getElementById("stats-"+id).innerText=`👁 ${post.views} Views | ❤️ ${post.likes.length} Likes`;
+    }
+}
+
+// Comments
+function addComment(id){
+    const input=document.getElementById("comment-"+id);
+    const txt=input.value.trim();
+    if(!txt) return;
+    let tx=db.transaction("posts","readwrite");
+    let store=tx.objectStore("posts");
+    store.get(Number(id)).onsuccess=e=>{
+        let post=e.target.result;
+        post.comments.push(currentUser.email.split("@")[0]+": "+txt);
+        store.put(post).onsuccess=()=>{
+            const commentsDiv=document.getElementById("comments-"+id);
+            commentsDiv.innerHTML+=`<div class="comment">💬 ${currentUser.email.split("@")[0]}: ${txt}</div>`;
+            input.value="";
+        }
+    }
+}
+
+// Views
+function incrementView(id){
+    let tx=db.transaction("posts","readwrite");
+    let store=tx.objectStore("posts");
+    store.get(Number(id)).onsuccess=e=>{
+        let post=e.target.result;
+        post.views+=1;
+        store.put(post).onsuccess=()=>document.getElementById("stats-"+id).innerText=`👁 ${post.views} Views | ❤️ ${post.likes.length} Likes`;
+    }
+}
+
+// Delete
+function deletePost(id){
+    if(!confirm("Delete this post?")) return;
+    let tx=db.transaction("posts","readwrite");
+    let store=tx.objectStore("posts");
+    store.delete(Number(id)).onsuccess=()=>document.getElementById("post-"+id).remove();
+}
+</script>
+</body>
+</html>

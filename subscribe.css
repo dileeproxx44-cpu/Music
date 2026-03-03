@@ -1,0 +1,160 @@
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+body{
+background: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.85)),
+url("https://images.unsplash.com/photo-1506157786151-b8491531f063") no-repeat center center fixed;
+background-size: cover;
+color:white;
+}
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 40px;
+    background: #1e1e1e;
+    position: sticky;
+    top: 0;
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: bold;
+    color: #00f5ff;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 15px;
+    transition: 0.3s;
+}
+
+nav a:hover {
+    color: #8a2be2;
+}
+
+.profile {
+    background: #8a2be2;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+}
+.hero {
+    height: 90vh;
+    background: url("https://images.unsplash.com/photo-1511379938547-c1f69419868d") no-repeat center center/cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+}
+.section {
+    padding: 60px 40px;
+}
+
+.section h2 {
+    margin-bottom: 30px;
+    font-size: 28px;
+}
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 25px;
+}
+.card {
+    background: #1e1e1e;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    transition: 0.3s;
+}
+
+.card img {
+    width: 100%;
+    height: 200px;          
+    object-fit: cover;      
+    border-radius: 12px;
+    display: block;
+}
+.card h3 {
+    margin: 15px 0;
+}
+
+.card button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 20px;
+    background: #8a2be2;
+    color: white;
+    cursor: pointer;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 20px rgba(138, 43, 226, 0.4);
+}
+
+.pricing {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}
+
+.price-card {
+    background: #1e1e1e;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    width: 250px;
+    transition: 0.3s;
+}
+
+.price-card h3 {
+    margin-bottom: 15px;
+}
+
+.price-card p {
+    margin: 10px 0;
+}
+
+.price-card button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 25px;
+    background: #00f5ff;
+    cursor: pointer;
+}
+
+.price-card:hover {
+    transform: scale(1.05);
+}
+
+footer {
+    background: #1e1e1e;
+    text-align: center;
+    padding: 20px;
+    margin-top: 50px;
+}
+
+
+@media(max-width: 768px) {
+    nav {
+        display: none;
+    }
+}
+.price-card ul{
+    list-style: none;
+    padding: 10px 0;
+}
+
+.price-card ul li{
+    margin: 6px 0;
+    font-size: 14px;
+}

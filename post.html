@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audio Aura - Upload</title>
+<link rel="stylesheet" href="post.css">
+</head>
+<body>
+
+<header>
+<div class="logo">🎵 RhythmX</div>
+<nav>
+<a href="home.html">Home</a>
+<a href="director.html">Directors</a>
+<a href="instrument.html">Instruments</a>
+<a href="post.html">Upload Music</a>
+<a href="feed.html">Posts</a>
+<a href="subscribe.html">Subscribe</a>
+<a href="profile.html">Profile</a>
+</nav>
+<div class="profile">
+Welcome, <span id="profileName"></span> |
+<button onclick="logout()" style="background:none;border:none;color:white;cursor:pointer;">Logout</button>
+</div>
+</header>
+
+<section>
+<div class="box">
+<h2>Upload Your Music 🎵</h2>
+
+<form id="uploadForm">
+<input type="text" id="title" placeholder="Song or Instrument Name" required>
+<select id="type">
+<option value="Song">Song</option>
+<option value="Instrument">Instrument</option>
+</select>
+<input type="file" id="audioFile" accept="audio/*" required>
+<button type="submit">Upload</button>
+</form>
+</div>
+</section>
+
+<script type="module">
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAyoJLg5gJnGStzuZXDLYyk8zNLd0DzFII",
+  authDomain: "audio-auro-pro.firebaseapp.com",
+  projectId: "audio-auro-pro",
+  appId: "1:480222649355:web:3308d7303a2e8021e57b0e"
+};
+
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+let currentUser = null;
+
+// Auth
+onAuthStateChanged(auth,user=>{
+    if(user){
+        currentUser=user;
+        document.getElementById("profileName").innerText=user.email.split("@")[0];
+    }else window.location.href="login.html";
+});
+window.logout=()=>signOut(auth).then(()=>window.location.href="login.html");
+
+// IndexedDB
+let db;
+let request=indexedDB.open("AudioAuraDB",3);
+request.onupgradeneeded=function(e){
+    db=e.target.result;
+    if(!db.objectStoreNames.contains("posts")){
+        db.createObjectStore("posts",{keyPath:"id"});
+    }
+};
+request.onsuccess=function(e){db=e.target.result;};
+request.onerror=function(){alert("❌ DB failed to open");};
+
+// Upload
+document.getElementById("uploadForm").addEventListener("submit",function(e){
+    e.preventDefault();
+    if(!currentUser) return alert("Login first!");
+
+    let title=document.getElementById("title").value.trim();
+    let type=document.getElementById("type").value;
+    let file=document.getElementById("audioFile").files[0];
+    if(!file) return alert("Select file!");
+    if(!file.type.startsWith("audio/")) return alert("Upload audio only!");
+    if(file.size>50*1024*1024) return alert("Max 50MB");
+
+    let reader=new FileReader();
+    reader.onload=function(ev){
+        let audioData=ev.target.result;
+        let post={
+            id:Date.now(),
+            username:currentUser.email.split("@")[0],
+            title:title,
+            type:type,
+            audioFile:audioData,
+            likes:[],
+            views:0,
+            comments:[],
+            date:new Date().toLocaleString()
+        };
+        let tx=db.transaction("posts","readwrite");
+        let store=tx.objectStore("posts");
+        let addReq=store.add(post);
+        addReq.onsuccess=()=>window.location.href="profile.html";
+        addReq.onerror=()=>alert("Upload failed!");
+    };
+    reader.readAsArrayBuffer(file);
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Audio Aura - Login</title>
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+<div class="login-container">
+    <h2>🎵Feel the Music</h2>
+    <form id="loginForm">
+
+        <div class="input-group">
+            <label>Username</label>
+            <input type="text" id="loginUsername" placeholder="Enter username" required>
+        </div>
+
+        <div class="input-group">
+            <label>Password</label>
+            <div class="password-wrapper">
+                <input type="password" id="loginPassword" placeholder="Enter password" required>
+                <span id="togglePassword" class="toggle">👁</span>
+            </div>
+        </div>
+
+        <button type="submit">Login</button>
+
+        <p class="register-text">
+            Don't have an account?
+            <a href="register.html">Register</a>
+        </p>
+
+    </form>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// 🔥 Firebase Config
+const firebaseConfig = {
+  apiKey: "AIzaSyAyoJLg5gJnGStzuZXDLYyk8zNLd0DzFII",
+  authDomain: "audio-auro-pro.firebaseapp.com",
+  projectId: "audio-auro-pro",
+  appId: "1:480222649355:web:3308d7303a2e8021e57b0e"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const form = document.getElementById("loginForm");
+
+// Toggle password visibility
+document.getElementById("togglePassword").addEventListener("click", () => {
+    const passField = document.getElementById("loginPassword");
+    if(passField.type === "password") passField.type = "text";
+    else passField.type = "password";
+});
+
+form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const username = document.getElementById("loginUsername").value.trim();
+    const password = document.getElementById("loginPassword").value.trim();
+
+    if(!username || !password){
+        alert("Please enter both fields");
+        return;
+    }
+
+    const email = username + "@audioaura.com";
+
+    try {
+        // 1️⃣ Sign in with Firebase Auth
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // 2️⃣ Fetch user info from Firestore
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if(!userDoc.exists()){
+            alert("No user details found in database ❌");
+            return;
+        }
+
+        const userData = userDoc.data();
+        console.log("User Data:", userData);
+
+        // Optional: You can save user info in localStorage for other pages
+        localStorage.setItem("username", userData.username);
+        localStorage.setItem("plan", userData.plan);
+
+        alert(`Welcome back, ${userData.username} 🎵`);
+        window.location.href = "home.html";
+
+    } catch (error) {
+        console.error(error);
+        alert("Invalid Credentials ❌");
+    }
+});
+</script>
+</body>
+</html>

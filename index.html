@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RhythmX - Feel the Rhythm</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Poppins:wght@300;500&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    height:100vh;
+    font-family:'Poppins',sans-serif;
+    background:linear-gradient(rgba(0,0,0,0.7),rgba(0,0,0,0.8)),
+    url('https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f') no-repeat center center/cover;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    color:white;
+    overflow:hidden;
+}
+
+/* Glowing animated background effect */
+body::before{
+    content:'';
+    position:absolute;
+    width:400px;
+    height:400px;
+    background:radial-gradient(circle,#ff00cc,#3333ff);
+    filter:blur(150px);
+    animation:glow 6s infinite alternate;
+    z-index:0;
+}
+
+@keyframes glow{
+    0%{ transform:translate(-50px,-50px); }
+    100%{ transform:translate(50px,50px); }
+}
+
+.container{
+    position:relative;
+    z-index:1;
+}
+
+h1{
+    font-family:'Orbitron',sans-serif;
+    font-size:70px;
+    letter-spacing:5px;
+    background:linear-gradient(45deg,#ff00cc,#00ffff);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    margin-bottom:20px;
+    animation:fadeIn 2s ease-in-out;
+}
+
+.quote{
+    font-size:30px;
+    font-weight:300;
+    margin-bottom:40px;
+    animation:slideUp 2s ease-in-out;
+}
+
+button{
+    padding:15px 50px;
+    font-size:20px;
+    border:none;
+    border-radius:50px;
+    background:linear-gradient(45deg,#ff00cc,#3333ff);
+    color:white;
+    cursor:pointer;
+    transition:0.4s;
+    box-shadow:0 0 20px rgba(255,0,200,0.6);
+}
+
+button:hover{
+    transform:scale(1.1);
+    box-shadow:0 0 40px rgba(0,255,255,0.8);
+}
+
+@keyframes fadeIn{
+    from{opacity:0;}
+    to{opacity:1;}
+}
+
+@keyframes slideUp{
+    from{transform:translateY(40px); opacity:0;}
+    to{transform:translateY(0); opacity:1;}
+}
+
+/* Responsive */
+@media(max-width:768px){
+    h1{ font-size:45px; }
+    .quote{ font-size:20px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>RhythmX</h1>
+    <div class="quote">Feel the Rhythm of the Music 🎵</div>
+    <button onclick="goToLogin()">Get Started</button>
+</div>
+
+<script>
+function goToLogin(){
+    window.location.href = "login.html";
+}
+</script>
+
+</body>
+</html>

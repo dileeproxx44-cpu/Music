@@ -1,0 +1,89 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+body{
+background: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.85)),
+url("https://images.unsplash.com/photo-1511379938547-c1f69419868d") no-repeat center center fixed;
+background-size: cover;
+color:white;
+}
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 40px;
+    background: #1e1e1e;
+    position: sticky;
+    top: 0;
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: bold;
+    color: #00f5ff;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 15px;
+    transition: 0.3s;
+}
+
+nav a:hover {
+    color: #8a2be2;
+}
+
+.profile {
+    background: #8a2be2;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+}
+section {
+    display: flex;
+    justify-content: center;
+    margin-top: 60px;
+}
+
+.box {
+    background: rgba(7, 7, 7, 0.1);
+    padding: 40px;
+    border-radius: 12px;
+    width: 350px;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+}
+
+.box h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.box input,
+.box select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    border: none;
+    outline: none;
+}
+
+.box button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    background: linear-gradient(45deg,#00f2fe,#4facfe);
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.box button:hover {
+    transform: scale(1.05);
+}

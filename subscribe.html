@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Subscribe | Audio Aura</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="subscribe.css">
+</head>
+<body>
+
+<header>
+    <div class="logo">🎵 RhythmX</div>
+    <nav>
+        <a href="home.html">Home</a>
+        <a href="director.html">Directors</a>
+        <a href="instrument.html">Instruments</a>
+        <a href="post.html">Upload Music</a>
+        <a href="feed.html">Posts</a>
+        <a href="subscribe.html">Subscribe</a>
+        <a href="profile.html">Profile</a>
+    </nav>
+
+    <div class="profile">
+        Welcome, <span id="profileName"></span> |
+        <button onclick="logout()" 
+        style="background:none;border:none;color:white;cursor:pointer;">
+        Logout
+        </button>
+    </div>
+</header>
+
+<section class="section">
+    <h2>Subscription Plans</h2>
+
+    <div class="pricing">
+        <div class="price-card">
+            <h3>Free</h3>
+            <p>₹0</p>
+            <p>Limited Access</p>
+            <ul>
+                <li>✔ 3 Songs Only</li>
+                <li>❌ No Instrument Access</li>
+                <li>❌ No Premium Content</li>
+            </ul>
+            <button onclick="chooseFree()">Choose</button>
+        </div>
+
+        <div class="price-card">
+            <h3>Premium</h3>
+            <p>₹99 / 6 Months</p>
+            <p>Unlimited Music</p>
+            <ul>
+                <li>✔ Unlimited Songs</li>
+                <li>✔ Instrument Sounds</li>
+                <li>✔ Future Updates</li>
+            </ul>
+            <button onclick="showPayment()">Subscribe</button>
+        </div>
+    </div>
+
+    <div id="paymentBox" style="display:none; margin-top:30px;">
+        <h3>Select Payment Method</h3>
+
+        <select id="paymentMethod">
+            <option value="UPI">UPI</option>
+            <option value="Card">Debit/Credit Card</option>
+            <option value="NetBanking">Net Banking</option>
+        </select>
+
+        <br><br>
+
+        <input type="text" id="paymentDetails" placeholder="Enter Payment Details">
+
+        <br><br>
+
+        <button onclick="completePayment()">Pay ₹299</button>
+    </div>
+
+    <p id="currentPlan" style="margin-top:20px; font-weight:bold;"></p>
+</section>
+
+<script type="module">
+    /* =========================
+   FIREBASE IMPORTS
+========================= */
+
+import { initializeApp, getApps, getApp } 
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+
+import { getAuth, onAuthStateChanged, signOut } 
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+/* =========================
+   FIREBASE CONFIG
+========================= */
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAyoJLg5gJnGStzuZXDLYyk8zNLd0DzFII",
+  authDomain: "audio-auro-pro.firebaseapp.com",
+  projectId: "audio-auro-pro",
+  appId: "1:480222649355:web:3308d7303a2e8021e57b0e"
+};
+
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+window.userPlan = "Free"; // default global
+
+let currentUser = null;
+let db;
+
+/* =========================
+   AUTH CHECK
+========================= */
+
+onAuthStateChanged(auth, (user) => {
+
+  if (user) {
+
+    currentUser = user;
+
+    document.getElementById("profileName").innerText =
+      user.email.split("@")[0];
+
+    initDB();
+
+  } else {
+    window.location.href = "login.html";
+  }
+
+});
+
+/* =========================
+   LOGOUT (GLOBAL)
+========================= */
+
+window.logout = function(){
+  signOut(auth).then(()=>{
+    window.location.href="login.html";
+  });
+};
+
+/* =========================
+   INDEXEDDB FOR PLAN
+========================= */
+
+function initDB(){
+
+let request = indexedDB.open("AudioAuraDB", 2);
+
+request.onupgradeneeded = function(e){
+db = e.target.result;
+if(!db.objectStoreNames.contains("plans")){
+db.createObjectStore("plans",{keyPath:"email"});
+}
+};
+
+request.onsuccess = function(e){
+db = e.target.result;
+loadUserPlan();
+};
+
+}
+
+function saveUserPlan(){
+
+let tx = db.transaction(["plans"],"readwrite");
+let store = tx.objectStore("plans");
+
+store.put({
+email: currentUser.email,
+plan: window.userPlan,
+expiry: window.userPlan==="Premium" 
+? Date.now() + (180*24*60*60*1000)  // 6 months
+: null
+});
+
+updatePlanUI();
+}
+
+function loadUserPlan(){
+
+let tx = db.transaction(["plans"],"readonly");
+let store = tx.objectStore("plans");
+
+store.get(currentUser.email).onsuccess = function(e){
+
+if(e.target.result){
+
+window.userPlan = e.target.result.plan;
+
+if(window.userPlan==="Premium" && e.target.result.expiry){
+
+if(Date.now() > e.target.result.expiry){
+window.userPlan="Free";
+saveUserPlan();
+alert("Premium expired. Switched to Free.");
+}
+
+}
+
+}
+
+updatePlanUI();
+
+};
+
+}
+
+function updatePlanUI(){
+document.getElementById("currentPlan").innerText =
+"Current Plan: " + window.userPlan;
+}
+
+/* =========================
+   FREE PLAN
+========================= */
+
+window.chooseFree = function(){
+window.userPlan = "Free";
+saveUserPlan();
+alert("Free Plan Activated");
+};
+
+/* =========================
+   PAYMENT SYSTEM (FAKE)
+========================= */
+
+window.showPayment = function(){
+document.getElementById("paymentBox").style.display="block";
+};
+
+window.completePayment = function(){
+
+let method = document.getElementById("paymentMethod").value;
+let details = document.getElementById("paymentDetails").value.trim();
+
+if(details===""){
+alert("Enter payment details");
+return;
+}
+
+alert("Processing payment via " + method + "...");
+
+setTimeout(()=>{
+alert("🔒 Verifying Payment...");
+},1000);
+
+setTimeout(()=>{
+alert("💳 Payment Approved!");
+window.userPlan="Premium";
+saveUserPlan();
+document.getElementById("paymentBox").style.display="none";
+},2000);
+
+};
+
+/* =========================
+   GLOBAL ACCESS FUNCTION
+   USE IN ALL PAGES
+========================= */
+
+window.canAccessSong = function(index){
+
+if(window.userPlan==="Premium"){
+return true;
+}
+
+if(window.userPlan==="Free" && index < 3){
+return true;
+}
+
+alert("Upgrade to Premium to unlock more content.");
+return false;
+
+};
+</script>
+</body>
+</html>

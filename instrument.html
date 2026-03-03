@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rhythmx - Music Instruments</title>
+<link rel="stylesheet" href="instrument.css">
+</head>
+
+<body>
+ <header>
+    <div class="logo">🎵 RhythmX</div>
+    <nav>
+        <a href="home.html">Home</a>
+        <a href="director.html">Directors</a>
+        <a href="instrument.html">Instruments</a>
+        <a href="post.html">Upload Music</a>
+        <a href="feed.html">Posts</a>
+        <a href="subscribe.html">Subscribe</a>
+        <a href="profile.html">Profile</a>
+    </nav>
+   <div class="profile">
+    Welcome, <span id="profileName"></span> |
+    <button onclick="logout()" style="background:none;border:none;color:white;cursor:pointer;">Logout</button>
+</div>
+</header>
+<div class="search-box">
+    <h1>Music Instruments</h1>
+<input type="text" id="searchInput" placeholder="Search Instruments or Music..." onkeyup="searchInstruments()">
+</div>
+
+<div class="container" id="instrumentContainer"></div>
+
+<div class="songs-section" id="songsSection">
+<h2 id="instrumentTitle"></h2>
+<div id="songsList"></div>
+</div>
+<script type="module">
+
+/* =========================
+   FIREBASE IMPORTS
+========================= */
+
+import { initializeApp, getApps, getApp } 
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+
+import { getAuth, onAuthStateChanged, signOut } 
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+/* =========================
+   FIREBASE CONFIG
+========================= */
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAyoJLg5gJnGStzuZXDLYyk8zNLd0DzFII",
+  authDomain: "audio-auro-pro.firebaseapp.com",
+  projectId: "audio-auro-pro",
+  appId: "1:480222649355:web:3308d7303a2e8021e57b0e"
+};
+
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+/* =========================
+   AUTH CHECK + USER NAME
+========================= */
+
+onAuthStateChanged(auth, (user) => {
+
+  if (user) {
+    const nameField = document.getElementById("profileName");
+    if(nameField){
+      nameField.innerText = user.email.split("@")[0];
+    }
+  } else {
+    window.location.href = "login.html";
+  }
+
+});
+
+/* =========================
+   LOGOUT (GLOBAL)
+========================= */
+
+window.logout = function () {
+  signOut(auth).then(() => {
+    window.location.href = "login.html";
+  });
+};
+
+/* =========================
+   MUSIC SYSTEM
+========================= */
+
+let currentAudio = null;
+
+/* =========================
+   VISIBLE INSTRUMENTS
+========================= */
+
+const visibleInstruments = [
+{
+name:"Piano",
+image:"data:image/jpeg;base64,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",
+songs:[
+{title:"Piano Music 1", file:"audio/piano1.mp3"},
+{title:"Piano Music 2", file:"audio/piano2.mp3"},
+{title:"Piano Music 3", file:"audio/piano3.mp3"}
+]
+},
+{
+name:"Tabla",
+image:"https://thumbs.dreamstime.com/b/ethnic-musical-instruments-tabla-hang-interior-chill-out-107712150.jpg",
+songs:[
+{title:"Tabla Music 1", file:"audio/tabla1.mp3"},
+{title:"Tabla Music 2", file:"audio/tabla2.mp3"},
+{title:"Tabla Music 3", file:"audio/tabla3.mp3"}
+]
+},
+{
+name:"Guitar",
+image:"https://png.pngtree.com/thumb_back/fh260/background/20230717/pngtree-lone-acoustic-guitar-in-a-shadowy-studio-3d-rendered-image-image_3898846.jpg",
+songs:[
+{title:"Guitar Music 1", file:"audio/guitar1.mp3"},
+{title:"Guitar Music 2", file:"audio/guitar2.mp3"},
+{title:"Guitar Music 3", file:"audio/guitar3.mp3"}
+]
+}
+];
+
+const hiddenInstruments = [
+{
+name:"Drums",
+image:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQzc_FeCSbwjWowvT5Y9aBdQDRdgQXnfEiawg&s",
+songs:[
+{title:"Drum Music 1", file:"audio/drum1.mp3"},
+{title:"Drum Music 2", file:"audio/drum2.mp3"},
+{title:"Drum Music 3", file:"audio/drum3.mp3"}
+]
+},
+{
+name:"Veena",
+image:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtsWWpGtvP_yNUp1yLKuhIPsjYa5u4yTLASw&s",
+songs:[
+{title:"Veena Music 1", file:"audio/veena1.mp3"},
+{title:"Veena Music 2", file:"audio/veena2.mp3"},
+{title:"Veena Music 3", file:"audio/veena3.mp3"}
+]
+},
+{
+name:"Flute",
+image:"https://i.pinimg.com/736x/87/85/24/878524ed631849a8e81d6704fe569b9d.jpg",
+songs:[
+{title:"Flute Music 1", file:"audio/flute1.mp3"},
+{title:"Flute Music 2", file:"audio/flute2.mp3"},
+{title:"Flute Music 3", file:"audio/flute3.mp3"}
+]
+}
+];
+
+const allInstruments = [...visibleInstruments, ...hiddenInstruments];
+
+/* =========================
+   GLOBAL FUNCTIONS
+========================= */
+
+window.displayInstruments = function(list){
+
+let container = document.getElementById("instrumentContainer");
+container.innerHTML = "";
+
+if(list.length === 0){
+container.innerHTML = "<p style='color:gray'>No matching instrument found.</p>";
+return;
+}
+
+list.forEach(instrument => {
+
+let card = document.createElement("div");
+card.className = "card";
+
+card.innerHTML = `
+<img src="${instrument.image}">
+<h3>${instrument.name}</h3>
+<p>${instrument.songs.length} Music Files</p>
+`;
+
+card.onclick = function(){
+window.showSongs(instrument);
+};
+
+container.appendChild(card);
+
+});
+};
+
+displayInstruments(visibleInstruments);
+
+window.searchInstruments = function(){
+
+let input = document.getElementById("searchInput").value.trim().toLowerCase();
+
+if(input === ""){
+displayInstruments(visibleInstruments);
+return;
+}
+
+let filtered = allInstruments.filter(instrument => {
+let nameMatch = instrument.name.toLowerCase().includes(input);
+let musicMatch = instrument.songs.some(song =>
+song.title.toLowerCase().includes(input)
+);
+return nameMatch || musicMatch;
+});
+
+displayInstruments(filtered);
+};
+
+window.showSongs = function(instrument){
+
+let section = document.getElementById("songsSection");
+let title = document.getElementById("instrumentTitle");
+let list = document.getElementById("songsList");
+
+section.style.display = "block";
+title.innerText = instrument.name + " - " + instrument.songs.length + " Music Files";
+list.innerHTML = "";
+
+instrument.songs.forEach(song => {
+
+let div = document.createElement("div");
+div.className = "song";
+
+div.innerHTML = `
+<p>${song.title}</p>
+<audio src="${song.file}"></audio>
+<div style="margin-top:6px; font-size:14px; color:#aaa;">
+<span class="current">0:00</span> /
+<span class="duration">0:00</span>
+</div>
+<button onclick="playSong(this)">▶ Play</button>
+<button style="display:none;" onclick="pauseSong(this)">⏸ Pause</button>
+`;
+
+list.appendChild(div);
+
+let audio = div.querySelector("audio");
+let currentSpan = div.querySelector(".current");
+let durationSpan = div.querySelector(".duration");
+
+audio.addEventListener("loadedmetadata", function(){
+durationSpan.textContent = window.formatTime(audio.duration);
+});
+
+audio.addEventListener("timeupdate", function(){
+currentSpan.textContent = window.formatTime(audio.currentTime);
+});
+
+audio.addEventListener("ended", function(){
+div.querySelector("button:nth-of-type(1)").style.display = "inline-block";
+div.querySelector("button:nth-of-type(2)").style.display = "none";
+currentSpan.textContent = "0:00";
+});
+
+});
+
+};
+
+window.playSong = function(btn){
+
+let songDiv = btn.parentElement;
+let audio = songDiv.querySelector("audio");
+let pauseBtn = songDiv.querySelector("button:nth-of-type(2)");
+
+if(currentAudio && currentAudio !== audio){
+currentAudio.pause();
+let oldDiv = currentAudio.parentElement;
+oldDiv.querySelector("button:nth-of-type(1)").style.display = "inline-block";
+oldDiv.querySelector("button:nth-of-type(2)").style.display = "none";
+}
+
+audio.play();
+currentAudio = audio;
+
+btn.style.display = "none";
+pauseBtn.style.display = "inline-block";
+};
+
+window.pauseSong = function(btn){
+
+let songDiv = btn.parentElement;
+let audio = songDiv.querySelector("audio");
+let playBtn = songDiv.querySelector("button:nth-of-type(1)");
+
+audio.pause();
+
+btn.style.display = "none";
+playBtn.style.display = "inline-block";
+};
+
+window.formatTime = function(seconds){
+
+let mins = Math.floor(seconds / 60);
+let secs = Math.floor(seconds % 60);
+
+if(secs < 10){
+secs = "0" + secs;
+}
+
+return mins + ":" + secs;
+};
+
+</script>
+</body>
+</html>

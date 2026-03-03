@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RhythmX - Music Directors</title>
+<link rel="stylesheet" href="director.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">🎵 RhythmX</div>
+  <nav>
+    <a href="home.html">Home</a>
+        <a href="director.html">Directors</a>
+        <a href="instrument.html">Instruments</a>
+        <a href="post.html">Upload Music</a>
+        <a href="feed.html">Posts</a>
+        <a href="subscribe.html">Subscribe</a>
+        <a href="profile.html">Profile</a>
+  </nav>
+  <div class="profile">
+    Welcome, <span id="profileName">User</span> |
+    <button onclick="logout()" style="background:none;border:none;color:white;cursor:pointer;">Logout</button>
+  </div>
+</header>
+
+<h1>Famous Music Directors</h1>
+<div class="search-box">
+  <input type="text" id="searchInput" placeholder="Search Music Directors or Songs..." onkeyup="searchDirectors()">
+</div>
+
+<div class="container" id="directorContainer"></div>
+
+<div class="songs-section" id="songsSection">
+  <h2 id="directorTitle"></h2>
+  <div id="songsList"></div>
+</div>
+<script type="module">
+
+import { initializeApp, getApps, getApp } 
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+
+import { getAuth, onAuthStateChanged, signOut } 
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+/* =========================
+   FIREBASE CONFIG
+========================= */
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAyoJLg5gJnGStzuZXDLYyk8zNLd0DzFII",
+  authDomain: "audio-auro-pro.firebaseapp.com",
+  projectId: "audio-auro-pro",
+  appId: "1:480222649355:web:3308d7303a2e8021e57b0e"
+};
+
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+let firebaseUser = null;
+let userPlan = "free"; // default plan
+
+/* =========================
+   AUTH CHECK + NAME
+========================= */
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    firebaseUser = user;
+    document.getElementById("profileName").innerText =
+      user.email.split("@")[0];
+  } else {
+    window.location.href = "login.html";
+  }
+});
+
+window.logout = function () {
+  signOut(auth).then(() => {
+    window.location.href = "login.html";
+  });
+};
+
+/* =========================
+   PLAN CHECK FUNCTION
+========================= */
+
+window.canAccessSong = function(index){
+  if(userPlan === "premium") return true;
+  if(index < 3) return true;
+  alert("Free Plan allows only 3 songs. Upgrade to Premium 🚀");
+  return false;
+};
+
+/* =========================
+   MUSIC SYSTEM
+========================= */
+
+let currentAudio = null;
+
+/* =========================
+   DATA (VISIBLE + HIDDEN)
+========================= */
+
+const visibleDirectors = [
+  {
+    name:"DSP",
+    image:"https://yt3.googleusercontent.com/Jn3s6U5foBczx3HoJuiVN6euF7QRB1b8rsp3lecxZ7EwumQ-27E_iR2uu8fJV0H6cctb74s5nut_dhM=w2880-h1200-p-l90-rj",
+    songs:[
+      {title:"peelings", file:"audio/dsp1.mp3"},
+      {title:"Dekhlenge Saala", file:"audio/dsp2.mp3"},
+      {title:"akasam ammai", file:"audio/dsp3.mp3"}
+    ]
+  },
+  {
+    name:"SS Thaman",
+    image:"https://static.toiimg.com/thumb/imgsize-23456,msid-122050893,width-600,resizemode-4/pg14-thaman1.jpg",
+    songs:[
+      {title:"butta bomma", file:"audio/thaman1.mp3"},
+      {title:"ramuloo", file:"audio/thaman2.mp3"},
+      {title:"rajasaab", file:"audio/thaman3.mp3"}
+    ]
+  },
+  {
+    name:"Anirudh",
+    image:"https://upload.wikimedia.org/wikipedia/commons/d/d4/Anirudh_Ravichander_at_Audi_Ritz_Style_Awards_2017_%28cropped%29.jpg",
+    songs:[
+      {title:"aaya sher", file:"audio/ani1.mp3"},
+      {title:"fear song", file:"audio/ani2.mp3"},
+      {title:"hukum song", file:"audio/ani3.mp3"}
+    ]
+  }
+];
+
+const hiddenDirectors = [
+  {
+    name:"Harris Jayaraj",
+    image:"https://preview.redd.it/whats-the-best-album-of-harris-jayaraj-v0-r66lay8vxfcc1.jpeg?auto=webp&s=405af80a40e8750337fe30d508375efebce291e1",
+    songs:[
+      {title:"nenu nuvvantu", file:"audio/harris1.mp3"},
+      {title:"Adhey Nannu", file:"audio/harris2.mp3"},
+      {title:"hello ramantey", file:"audio/harris3.mp3"}
+    ]
+  },
+  {
+    name:"Ilaiyaraaja",
+    image:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Ilaiyaraaja_at_Merku_Thodarchi_Malai_Press_Meet_%28cropped%29.jpg/500px-Ilaiyaraaja_at_Merku_Thodarchi_Malai_Press_Meet_%28cropped%29.jpg",
+    songs:[
+      {title:"sundari nvey", file:"audio/ilai1.mp3"},
+      {title:"singarala", file:"audio/ilai2.mp3"},
+      {title:"priya priyathama", file:"audio/ilai3.mp3"}
+    ]
+  },
+  {
+    name:"A.R. Rahman",
+    image:"https://framerusercontent.com/images/D0sV6YYEINQAaW5k5bT1MowEI.jpg?width=3000&height=2000",
+    songs:[
+      {title:"chikri chikri", file:"audio/rahman1.mp3"},
+      {title:"musthafa", file:"audio/rahman2.mp3"},
+      {title:"vellopomakey", file:"audio/rahman3.mp3"}
+    ]
+  },
+  {
+    name:"Santhosh Narayan",
+    image:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTmFCzgb9N8J6SUTcHu4nUv7yG0MzwdQhRMEA&s",
+    songs:[
+      {title:"chamkeela angaleesi", file:"audio/santhosh1.mp3"},
+      {title:"ta takraa", file:"audio/santhosh2.mp3"},
+      {title:"doom dosthan", file:"audio/santhosh3.mp3"}
+    ]
+  },
+   {
+    name:"M.M Keervani",
+    image:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTCL2Yj5ll-v1zBmuQ-GtF83kX5u1xq8loA-Q&s",
+    songs:[
+      {title:"", file:"audio/keervani1.mp3"},
+      {title:"Raavanan Theme", file:"audio/keervani2.mp3"},
+      {title:"Kochadaiiyaan", file:"audio/keervani3.mp3"}
+    ]
+  },
+  {
+    name:"SPB",
+    image:"https://img10.hotstar.com/image/upload/f_auto,q_auto/sources/r1/cms/prod/301/1440301-i-659641ef92e2",
+    songs:[
+      {title:"ghal ghal", file:"audio/spb1.mp3"},
+      {title:"Palakollu Papa", file:"audio/spb2.mp3"},
+      {title:"ale ale mardhal", file:"audio/spb3.mp3"}
+    ]
+  }
+];
+
+const allDirectors = [...visibleDirectors, ...hiddenDirectors];
+
+/* =========================
+   DISPLAY DIRECTORS
+========================= */
+
+window.displayDirectors = function(list){
+  let container = document.getElementById("directorContainer");
+  container.innerHTML = "";
+
+  list.forEach(director => {
+    let card = document.createElement("div");
+    card.className = "card";
+
+    card.innerHTML = `
+      <img src="${director.image}">
+      <h3>${director.name}</h3>
+      <p>${director.songs.length} Songs</p>
+    `;
+
+    card.onclick = function(){
+      window.showSongs(director);
+    };
+
+    container.appendChild(card);
+  });
+};
+
+displayDirectors(visibleDirectors);
+
+/* =========================
+   SEARCH
+========================= */
+
+// Live search function for directors page
+const searchInput = document.getElementById("searchInput");
+
+searchInput.addEventListener("input", function() {
+    const query = this.value.trim().toLowerCase();
+
+    // If input is empty, show all directors
+    if(query === "") {
+        displayDirectors(allDirectors);
+        return;
+    }
+
+    // Filter directors based on name or song title
+    const filtered = allDirectors.filter(director =>
+        director.name.toLowerCase().includes(query) ||
+        director.songs.some(song => song.title.toLowerCase().includes(query))
+    );
+
+    displayDirectors(filtered);
+});
+
+/* =========================
+   SHOW SONGS
+========================= */
+
+window.showSongs = function(director){
+  let section = document.getElementById("songsSection");
+  let title = document.getElementById("directorTitle");
+  let list = document.getElementById("songsList");
+
+  section.style.display = "block";
+  title.innerText = director.name + " - " + director.songs.length + " Songs";
+  list.innerHTML = "";
+
+  director.songs.forEach((song,index) => {
+    let div = document.createElement("div");
+    div.className = "song";
+
+    div.innerHTML = `
+      <p>${song.title}</p>
+      <audio src="${song.file}"></audio>
+      <div style="margin-top:6px; font-size:14px; color:#aaa;">
+        <span class="current">0:00</span> / <span class="duration">0:00</span>
+      </div>
+      <button onclick="if(canAccessSong(${index})) playSong(this)">▶ Play</button>
+      <button style="display:none;" onclick="pauseSong(this)">⏸ Pause</button>
+    `;
+
+    list.appendChild(div);
+
+    let audio = div.querySelector("audio");
+    let currentSpan = div.querySelector(".current");
+    let durationSpan = div.querySelector(".duration");
+
+    audio.addEventListener("loadedmetadata", function(){
+      durationSpan.textContent = formatTime(audio.duration);
+    });
+
+    audio.addEventListener("timeupdate", function(){
+      currentSpan.textContent = formatTime(audio.currentTime);
+    });
+
+    audio.addEventListener("ended", function(){
+      div.querySelector("button:nth-of-type(1)").style.display = "inline-block";
+      div.querySelector("button:nth-of-type(2)").style.display = "none";
+      currentSpan.textContent = "0:00";
+    });
+
+  });
+};
+
+/* =========================
+   FORMAT TIME
+========================= */
+
+window.formatTime = function(seconds){
+  let mins = Math.floor(seconds / 60);
+  let secs = Math.floor(seconds % 60);
+  if(secs < 10) secs = "0" + secs;
+  return mins + ":" + secs;
+};
+
+/* =========================
+   PLAY / PAUSE
+========================= */
+
+window.playSong = function(btn){
+  let songDiv = btn.parentElement;
+  let audio = songDiv.querySelector("audio");
+  let pauseBtn = songDiv.querySelector("button:nth-of-type(2)");
+
+  if(currentAudio && currentAudio !== audio){
+    currentAudio.pause();
+    let oldDiv = currentAudio.parentElement;
+    oldDiv.querySelector("button:nth-of-type(1)").style.display = "inline-block";
+    oldDiv.querySelector("button:nth-of-type(2)").style.display = "none";
+  }
+
+  audio.play();
+  currentAudio = audio;
+  btn.style.display = "none";
+  pauseBtn.style.display = "inline-block";
+};
+
+window.pauseSong = function(btn){
+  let songDiv = btn.parentElement;
+  let audio = songDiv.querySelector("audio");
+  let playBtn = songDiv.querySelector("button:nth-of-type(1)");
+
+  audio.pause();
+  btn.style.display = "none";
+  playBtn.style.display = "inline-block";
+};
+
+</script>
+</body>
+</html>
