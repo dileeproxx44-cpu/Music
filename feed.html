@@ -15,7 +15,6 @@
 <a href="instrument.html">Instruments</a>
 <a href="post.html">Upload Music</a>
 <a href="feed.html">Posts</a>
-<a href="subscribe.html">Subscribe</a>
 <a href="profile.html">Profile</a>
 </nav>
 
@@ -40,48 +39,57 @@ const firebaseConfig = {
    projectId: "audio-auro-pro",
    appId: "1:480222649355:web:3308d7303a2e8021e57b0e"
 };
+
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-let currentUser=null;
-let db=null;
-let currentAudio=null;
+let currentUser = null;
+let db = null;
+let currentAudio = null;
 
-onAuthStateChanged(auth,user=>{
+// Auth
+onAuthStateChanged(auth, user => {
     if(user){
-        currentUser=user;
-        document.getElementById("profileName").innerText=user.email.split("@")[0];
+        currentUser = user;
+        document.getElementById("profileName").innerText = user.email.split("@")[0];
         initDB();
-    }else window.location.href="login.html";
+    } else {
+        window.location.href = "login.html";
+    }
 });
 
-window.logout=()=>signOut(auth).then(()=>window.location.href="login.html");
+window.logout = () => signOut(auth).then(()=> window.location.href="login.html");
 
-// IndexedDB
+// IndexedDB init
 function initDB(){
-    let request=indexedDB.open("AudioAuraDB",3);
-    request.onupgradeneeded=e=>{
-        db=e.target.result;
-        if(!db.objectStoreNames.contains("posts")) db.createObjectStore("posts",{keyPath:"id"});
+    let request = indexedDB.open("AudioAuraDB", 3);
+    request.onupgradeneeded = e => {
+        db = e.target.result;
+        if(!db.objectStoreNames.contains("posts")) db.createObjectStore("posts", {keyPath:"id"});
     };
-    request.onsuccess=e=>{
-        db=e.target.result;
-        loadPosts();
-    }
-    request.onerror=()=>alert("DB failed!");
+    request.onsuccess = e => {
+        db = e.target.result;
+        loadPosts(); // load posts after DB is ready
+    };
+    request.onerror = () => alert("❌ DB failed to open");
 }
 
-// Format time
-function formatTime(s){ let m=Math.floor(s/60); let sec=Math.floor(s%60); return m+":"+(sec<10?"0"+sec:sec); }
+// Format time for audio
+function formatTime(s){
+    let m = Math.floor(s / 60);
+    let sec = Math.floor(s % 60);
+    return m + ":" + (sec < 10 ? "0" + sec : sec);
+}
 
-// Load posts
+// Load all posts
 function loadPosts(){
-    const container=document.getElementById("allPosts");
-    container.innerHTML="";
-    let tx=db.transaction("posts","readonly");
-    let store=tx.objectStore("posts");
-    store.openCursor().onsuccess=e=>{
-        let cursor=e.target.result;
+    const container = document.getElementById("allPosts");
+    container.innerHTML = "";
+    let tx = db.transaction("posts", "readonly");
+    let store = tx.objectStore("posts");
+
+    store.openCursor().onsuccess = e => {
+        let cursor = e.target.result;
         if(cursor){
             renderPost(cursor.value, container, true);
             cursor.continue();
@@ -91,18 +99,18 @@ function loadPosts(){
 
 // Render single post
 function renderPost(p, container, canDelete){
-    const div=document.createElement("div");
-    div.className="post";
-    div.id="post-"+p.id;
-    div.innerHTML=`
+    const div = document.createElement("div");
+    div.className = "post";
+    div.id = "post-"+p.id;
+    div.innerHTML = `
         <div><b>${p.title}</b></div>
-        <div style="color:#bbb;">${p.type} | Uploaded by: ${p.username}</div> <!-- uploader name displayed -->
+        <div style="color:#bbb;">${p.type} | Uploaded by: ${p.username}</div>
         <audio id="audio-${p.id}"></audio>
         <div class="time-display"><span id="current-${p.id}">0:00</span> / <span id="duration-${p.id}">0:00</span></div>
         <div class="post-buttons">
-            <button id="play-${p.id}">▶ </button>
-            <button id="pause-${p.id}" style="display:none;">⏸ </button>
-            <button id="like-${p.id}">❤️ </button>
+            <button id="play-${p.id}">▶</button>
+            <button id="pause-${p.id}" style="display:none;">⏸</button>
+            <button id="like-${p.id}">❤️</button>
         </div>
         <div class="stats" id="stats-${p.id}">👁 ${p.views} Views | ❤️ ${p.likes.length} Likes</div>
         <div class="comment-box">
@@ -113,77 +121,79 @@ function renderPost(p, container, canDelete){
     `;
     container.prepend(div);
 
-    const audio=document.getElementById("audio-"+p.id);
-    audio.src=URL.createObjectURL(new Blob([p.audioFile]));
-    audio.onloadedmetadata=()=>document.getElementById("duration-"+p.id).innerText=formatTime(audio.duration);
-    audio.ontimeupdate=()=>document.getElementById("current-"+p.id).innerText=formatTime(audio.currentTime);
+    const audio = document.getElementById("audio-"+p.id);
+    // ✅ Convert ArrayBuffer to Blob so audio works
+    audio.src = URL.createObjectURL(new Blob([p.audioFile]));
+    audio.onloadedmetadata = () => document.getElementById("duration-"+p.id).innerText = formatTime(audio.duration);
+    audio.ontimeupdate = () => document.getElementById("current-"+p.id).innerText = formatTime(audio.currentTime);
 
     // Buttons
-    document.getElementById("play-"+p.id).onclick=()=>playSong(p.id);
-    document.getElementById("pause-"+p.id).onclick=()=>pauseSong(p.id);
-    document.getElementById("like-"+p.id).onclick=()=>likePost(p.id);
-    if(canDelete) document.getElementById("delete-"+p.id).onclick=()=>deletePost(p.id);
-    document.getElementById("comment-btn-"+p.id).onclick=()=>addComment(p.id);
+    document.getElementById("play-"+p.id).onclick = () => playSong(p.id);
+    document.getElementById("pause-"+p.id).onclick = () => pauseSong(p.id);
+    document.getElementById("like-"+p.id).onclick = () => likePost(p.id);
+    if(canDelete && document.getElementById("delete-"+p.id))
+        document.getElementById("delete-"+p.id).onclick = () => deletePost(p.id);
+    document.getElementById("comment-btn-"+p.id).onclick = () => addComment(p.id);
 }
 
 // Play / Pause
 function playSong(id){
-    const audio=document.getElementById("audio-"+id);
-    if(currentAudio && currentAudio!==audio){
+    const audio = document.getElementById("audio-"+id);
+    if(currentAudio && currentAudio !== audio){
         currentAudio.pause();
         document.getElementById("pause-"+currentAudio.id.split("-")[1]).style.display="none";
         document.getElementById("play-"+currentAudio.id.split("-")[1]).style.display="inline-block";
     }
     audio.play();
-    currentAudio=audio;
-    document.getElementById("play-"+id).style.display="none";
-    document.getElementById("pause-"+id).style.display="inline-block";
+    currentAudio = audio;
+    document.getElementById("play-"+id).style.display = "none";
+    document.getElementById("pause-"+id).style.display = "inline-block";
     incrementView(id);
 }
 function pauseSong(id){
-    const audio=document.getElementById("audio-"+id);
+    const audio = document.getElementById("audio-"+id);
     audio.pause();
-    document.getElementById("pause-"+id).style.display="none";
-    document.getElementById("play-"+id).style.display="inline-block";
+    document.getElementById("pause-"+id).style.display = "none";
+    document.getElementById("play-"+id).style.display = "inline-block";
 }
 
 // Likes
 function likePost(id){
-    let tx=db.transaction("posts","readwrite");
-    let store=tx.objectStore("posts");
-    store.get(Number(id)).onsuccess=e=>{
-        let post=e.target.result;
+    let tx = db.transaction("posts", "readwrite");
+    let store = tx.objectStore("posts");
+    store.get(Number(id)).onsuccess = e => {
+        let post = e.target.result;
         if(!post.likes.includes(currentUser.email.split("@")[0])) post.likes.push(currentUser.email.split("@")[0]);
-        store.put(post).onsuccess=()=>document.getElementById("stats-"+id).innerText=`👁 ${post.views} Views | ❤️ ${post.likes.length} Likes`;
+        store.put(post).onsuccess = () => document.getElementById("stats-"+id).innerText = `👁 ${post.views} Views | ❤️ ${post.likes.length} Likes`;
     }
 }
 
 // Comments
 function addComment(id){
-    const input=document.getElementById("comment-"+id);
-    const txt=input.value.trim();
+    const input = document.getElementById("comment-"+id);
+    const txt = input.value.trim();
     if(!txt) return;
-    let tx=db.transaction("posts","readwrite");
-    let store=tx.objectStore("posts");
-    store.get(Number(id)).onsuccess=e=>{
-        let post=e.target.result;
+    let tx = db.transaction("posts","readwrite");
+    let store = tx.objectStore("posts");
+    store.get(Number(id)).onsuccess = e => {
+        let post = e.target.result;
         post.comments.push(currentUser.email.split("@")[0]+": "+txt);
-        store.put(post).onsuccess=()=>{
-            const commentsDiv=document.getElementById("comments-"+id);
-            commentsDiv.innerHTML+=`<div class="comment">💬 ${currentUser.email.split("@")[0]}: ${txt}</div>`;
-            input.value="";
+        store.put(post).onsuccess = () => {
+            const commentsDiv = document.getElementById("comments-"+id);
+            commentsDiv.innerHTML += `<div class="comment">💬 ${currentUser.email.split("@")[0]}: ${txt}</div>`;
+            input.value = "";
         }
     }
 }
 
 // Views
 function incrementView(id){
-    let tx=db.transaction("posts","readwrite");
-    let store=tx.objectStore("posts");
-    store.get(Number(id)).onsuccess=e=>{
-        let post=e.target.result;
-        post.views+=1;
-        store.put(post).onsuccess=()=>document.getElementById("stats-"+id).innerText=`👁 ${post.views} Views | ❤️ ${post.likes.length} Likes`;
+    let tx = db.transaction("posts","readwrite");
+    let store = tx.objectStore("posts");
+    store.get(Number(id)).onsuccess = e => {
+        let post = e.target.result;
+        post.views += 1;
+        store.put(post).onsuccess = () => document.getElementById("stats-"+id).innerText = `👁 ${post.views} Views | ❤️ ${post.likes.length} Likes`;
     }
 }
 </script>

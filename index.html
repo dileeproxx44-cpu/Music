@@ -54,7 +54,7 @@ h1{
     font-size:70px;
     letter-spacing:5px;
     background:linear-gradient(45deg,#ff00cc,#00ffff);
-    -webkit-background-clip:text;
+    background-clip:text;
     -webkit-text-fill-color:transparent;
     margin-bottom:20px;
     animation:fadeIn 2s ease-in-out;
@@ -106,12 +106,12 @@ button:hover{
 <div class="container">
     <h1>RhythmX</h1>
     <div class="quote">Feel the Rhythm of the Music 🎵</div>
-    <button onclick="goToLogin()">Get Started</button>
+    <button onclick="goToHomepage()">Get Started</button>
 </div>
 
 <script>
-function goToLogin(){
-    window.location.href = "login.html";
+function goToHomepage(){
+    window.location.href = "home.html";
 }
 </script>
 

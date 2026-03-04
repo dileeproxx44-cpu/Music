@@ -16,7 +16,6 @@
 <a href="instrument.html">Instruments</a>
 <a href="post.html">Upload Music</a>
 <a href="feed.html">Posts</a>
-<a href="subscribe.html">Subscribe</a>
 <a href="profile.html">Profile</a>
 </nav>
 <div class="profile">
@@ -107,7 +106,10 @@ document.getElementById("uploadForm").addEventListener("submit",function(e){
         let tx=db.transaction("posts","readwrite");
         let store=tx.objectStore("posts");
         let addReq=store.add(post);
-        addReq.onsuccess=()=>window.location.href="profile.html";
+        addReq.onsuccess=()=>{
+    alert("🎉 Song uploaded successfully!");
+    window.location.href="profile.html";
+};
         addReq.onerror=()=>alert("Upload failed!");
     };
     reader.readAsArrayBuffer(file);

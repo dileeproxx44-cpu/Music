@@ -16,7 +16,6 @@
         <a href="instrument.html">Instruments</a>
         <a href="post.html">Upload Music</a>
         <a href="feed.html">Posts</a>
-        <a href="subscribe.html">Subscribe</a>
         <a href="profile.html">Profile</a>
   </nav>
   <div class="profile">
@@ -62,24 +61,46 @@ let firebaseUser = null;
 let userPlan = "free"; // default plan
 
 /* =========================
-   AUTH CHECK + NAME
+   AUTH CHECK + NAME (UPDATED)
 ========================= */
 
 onAuthStateChanged(auth, (user) => {
+
+  const profileName = document.getElementById("profileName");
+  const logoutBtn = document.querySelector(".profile button");
+
   if (user) {
     firebaseUser = user;
-    document.getElementById("profileName").innerText =
-      user.email.split("@")[0];
+
+    // Logged in
+    const username = user.email.split("@")[0];
+    profileName.innerText = username;
+
+    if (logoutBtn) logoutBtn.style.display = "inline";
+
   } else {
-    window.location.href = "login.html";
+
+    // Not logged in
+    firebaseUser = null;
+    profileName.innerText = "User";
+
+    if (logoutBtn) logoutBtn.style.display = "none";
   }
 });
 
+/* =========================
+   LOGOUT
+========================= */
+
 window.logout = function () {
-  signOut(auth).then(() => {
-    window.location.href = "login.html";
-  });
+  if(firebaseUser){
+    signOut(auth).then(() => {
+      alert("Logged out successfully!");
+      location.reload();
+    });
+  }
 };
+
 
 /* =========================
    PLAN CHECK FUNCTION
@@ -170,14 +191,14 @@ const hiddenDirectors = [
     ]
   },
    {
-    name:"M.M Keervani",
-    image:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTCL2Yj5ll-v1zBmuQ-GtF83kX5u1xq8loA-Q&s",
-    songs:[
-      {title:"", file:"audio/keervani1.mp3"},
-      {title:"Raavanan Theme", file:"audio/keervani2.mp3"},
-      {title:"Kochadaiiyaan", file:"audio/keervani3.mp3"}
-    ]
-  },
+  name:"M.M Keervani",
+  image:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTCL2Yj5ll-v1zBmuQ-GtF83kX5u1xq8loA-Q&s",
+  songs:[
+       {title:"Naatu Naatu", file:"audio/mm1.mp3"},
+      {title:"Mannela Thintivi Ra", file:"audio/mm2.mp3"},
+      {title:"Pacha Bottasi", file:"audio/mm3.mp3"}
+  ]
+},
   {
     name:"SPB",
     image:"https://img10.hotstar.com/image/upload/f_auto,q_auto/sources/r1/cms/prod/301/1440301-i-659641ef92e2",
@@ -220,28 +241,45 @@ window.displayDirectors = function(list){
 displayDirectors(visibleDirectors);
 
 /* =========================
-   SEARCH
+   SEARCH (UPDATED)
 ========================= */
 
-// Live search function for directors page
+
 const searchInput = document.getElementById("searchInput");
 
 searchInput.addEventListener("input", function() {
-    const query = this.value.trim().toLowerCase();
 
-    // If input is empty, show all directors
+    const query = this.value.trim().toLowerCase();
+    const container = document.getElementById("directorContainer");
+
+    // If empty → show all
     if(query === "") {
         displayDirectors(allDirectors);
         return;
     }
 
-    // Filter directors based on name or song title
+    // Filter directors
     const filtered = allDirectors.filter(director =>
         director.name.toLowerCase().includes(query) ||
-        director.songs.some(song => song.title.toLowerCase().includes(query))
+        director.songs.some(song => 
+            song.title && song.title.toLowerCase().includes(query)
+        )
     );
 
-    displayDirectors(filtered);
+    container.innerHTML = "";
+
+    if(filtered.length > 0){
+        displayDirectors(filtered);
+    } 
+    else {
+        // If nothing found
+        container.innerHTML = `
+          <div style="text-align:center; width:100%; margin-top:40px; font-size:20px; color:#ccc;">
+            We are furtherly working on it 🚧
+          </div>
+        `;
+    }
+
 });
 
 /* =========================

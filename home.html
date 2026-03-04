@@ -15,12 +15,14 @@
         <a href="instrument.html">Instruments</a>
         <a href="post.html">Upload Music</a>
         <a href="feed.html">Posts</a>
-        <a href="subscribe.html">Subscribe</a>
         <a href="profile.html">Profile</a>
     </nav>
    <div class="profile">
-    Welcome, <span id="profileName"></span> |
-    <button onclick="logout()" style="background:none;border:none;color:white;cursor:pointer;">Logout</button>
+    <span id="profileName"></span> |
+    <button onclick="logout()" 
+    style="background:none;border:none;color:white;cursor:pointer;">
+    Logout
+    </button>
 </div>
 </header>
 <section class="hero">
@@ -86,39 +88,59 @@
     <p>© 2026 Audio Aura | Designed by Dileep</p>
 </footer>
 <script type="module">
-    import { initializeApp, getApps, getApp } 
+import { initializeApp, getApps, getApp } 
 from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 
 import { getAuth, onAuthStateChanged, signOut } 
 from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-// 🔥 Your Firebase Config (same as login page)
+// 🔥 Your Firebase Config
 const firebaseConfig = {
     apiKey: "AIzaSyAyoJLg5gJnGStzuZXDLYyk8zNLd0DzFII",
-  authDomain: "audio-auro-pro.firebaseapp.com",
-  projectId: "audio-auro-pro",
-  appId: "1:480222649355:web:3308d7303a2e8021e57b0e"
+    authDomain: "audio-auro-pro.firebaseapp.com",
+    projectId: "audio-auro-pro",
+    appId: "1:480222649355:web:3308d7303a2e8021e57b0e"
 };
 
 // ✅ Prevent multiple initialization
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// ✅ Show Logged-in User Name
+// ✅ Allow Everyone + Show Welcome Message
 onAuthStateChanged(auth, (user) => {
-    if (user) {
-        document.getElementById("profileName").innerText =
-            user.email.split("@")[0];
-    } else {
-        window.location.href = "login.html";
+
+    const profileElement = document.getElementById("profileName");
+    const logoutBtn = document.querySelector(".profile button");
+
+    if (profileElement) {
+
+        if (user) {
+            // Logged in → Welcome + Username
+            const username = user.email.split("@")[0];
+            profileElement.innerText = "Welcome " + username;
+
+            if (logoutBtn) logoutBtn.style.display = "inline";
+        } 
+        else {
+            // Not logged in → Welcome User
+            profileElement.innerText = "Welcome User";
+
+            if (logoutBtn) logoutBtn.style.display = "none";
+        }
     }
 });
 
 // ✅ Logout Function
 window.logout = function () {
-    signOut(auth).then(() => {
-        window.location.href = "login.html";
-    });
+
+    const user = auth.currentUser;
+
+    if (user) {
+        signOut(auth).then(() => {
+            alert("Logged out successfully!");
+            location.reload();
+        });
+    }
 };
 
 // 🎵 Make functions global
