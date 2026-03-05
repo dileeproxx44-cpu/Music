@@ -90,6 +90,11 @@ button:hover {
     font-size: 14px;
 }
 
+.back-text{
+    text-align: center;
+    margin-top: 15px;
+    font-size: 14px;
+}
 .register-text a {
     color: #00f2fe;
     text-decoration: none;
@@ -98,4 +103,35 @@ button:hover {
 
 .register-text a:hover {
     text-decoration: underline;
+}
+/* GLOBAL MUSIC PLAYER */
+
+#globalPlayer{
+  width: 100%;
+  background: #111;
+  color: white;
+  padding: 12px 20px;
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.6);
+}
+
+#playerInfo{
+  font-size: 16px;
+}
+
+#playerControls button{
+  background: #ff4757;
+  border: none;
+  color: white;
+  padding: 8px 14px;
+  margin: 0 5px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+#playerControls button:hover{
+  background: #ff6b81;
 }
